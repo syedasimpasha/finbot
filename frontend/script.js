@@ -1,6 +1,6 @@
 // Configuration
 const config = {
-    backendUrl: 'https://your-pythonanywhere-username.pythonanywhere.com/analyze',
+    backendUrl: 'https://syedasimpasha.pythonanywhere.com/analyze',
     defaultAsset: 'BTC-USD',
     typingDelay: 800,
     errorMessage: 'Unable to process request. Please try again later.'
