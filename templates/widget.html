@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Financial Bot</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div id="finbot-widget">
+        <div class="header">
+            <img src="/static/img/logo.png" alt="Logo">
+            <h2>Financial Assistant</h2>
+        </div>
+        
+        <div id="chat-container">
+            <div id="messages"></div>
+            <div class="input-group">
+                <input type="text" id="user-input" 
+                    placeholder="Ask about BTC, AAPL, Gold...">
+                <button onclick="handleQuery()">Analyze</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    async function handleQuery() {
+        const input = document.getElementById('user-input');
+        const messages = document.getElementById('messages');
+        
+        // Add user message
+        messages.innerHTML += `
+            <div class="message user">${input.value}</div>
+        `;
+
+        try {
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    symbol: extractSymbol(input.value),
+                    type: detectAssetType(input.value)
+                })
+            });
+            
+            const analysis = await response.json();
+            
+            messages.innerHTML += `
+                <div class="message bot">
+                    Current Price: $${analysis.current_price}<br>
+                    24h Change: ${analysis.change?.toFixed(2) || 0}%<br>
+                    Next 24h Prediction: $${analysis.predictions.intraday}
+                </div>
+            `;
+            
+        } catch (error) {
+            messages.innerHTML += `
+                <div class="message error">Error: ${error.message}</div>
+            `;
+        }
+        
+        input.value = '';
+    }
+
+    function extractSymbol(text) {
+        const symbols = {
+            'bitcoin': 'bitcoin',
+            'apple': 'AAPL',
+            'gold': 'GC=F'
+        };
+        return Object.entries(symbols).reduce((acc, [key, val]) => 
+            text.toLowerCase().includes(key) ? val : acc, 'BTC-USD');
+    }
+
+    function detectAssetType(text) {
+        if (/stock|equity|share/i.test(text)) return 'stock';
+        if (/crypto|bitcoin|eth/i.test(text)) return 'crypto';
+        if (/gold|silver|commodity/i.test(text)) return 'commodity';
+        return 'crypto';
+    }
+    </script>
+</body>
+</html>
